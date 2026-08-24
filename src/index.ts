@@ -1,5 +1,5 @@
 import { createApp } from './app.js';
-import { env } from './config/env.js';
+import { env, isProduction } from './config/env.js';
 import { closePool, pingDatabase } from './db/pool.js';
 import { logger } from './logger.js';
 
@@ -11,7 +11,9 @@ async function main(): Promise<void> {
 
   const app = createApp();
   const server = app.listen(env.PORT, () => {
-    logger.info({ port: env.PORT, env: env.NODE_ENV }, 'orders-api listening');
+    // Only advertised when /docs is actually mounted -- see app.ts.
+    const docsUrl = isProduction ? undefined : `http://localhost:${env.PORT}/docs`;
+    logger.info({ port: env.PORT, env: env.NODE_ENV, ...(docsUrl ? { docsUrl } : {}) }, 'orders-api listening');
   });
 
   let shuttingDown = false;
